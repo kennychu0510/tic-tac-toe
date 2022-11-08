@@ -59,13 +59,16 @@ function Cell(props: { cell: CellState, idx: number }) {
     const move = getTurn(round)
     const newBoard = board
     newBoard[idx] = move
-    
+
     setBoard(newBoard)
     const winner = checkForWinner(newBoard)
     if (winner) {
       setWinner(winner)
     } else {
       setRound(round => round + 1)
+    }
+    if (round + 1 === 9) {
+      setWinner('None')
     }
   }
   return (
