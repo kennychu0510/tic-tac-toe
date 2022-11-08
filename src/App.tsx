@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState } from 'react'
 import './App.css'
-import { getTurn, isEven, resetBoard, CellState } from './helper'
+import { getTurn, isEven, resetBoard, CellState, checkForWinner } from './helper'
 
 
 type GameState = {
   round: number
   setRound: React.Dispatch<React.SetStateAction<number>>
   setWinner: React.Dispatch<React.SetStateAction<string>>
+  board: CellState[]
+  setBoard: React.Dispatch<React.SetStateAction<CellState[]>>
 }
 
 const GameContext = createContext<GameState | null>(null)
@@ -23,7 +25,7 @@ function App() {
   }
 
   return (
-    <GameContext.Provider value={{round, setRound, setWinner}}>
+    <GameContext.Provider value={{round, setRound, setWinner, board, setBoard}}>
     <div className="App">
       {winner ? 
       <h1>Winner: {winner}</h1>
@@ -32,9 +34,9 @@ function App() {
       }
       <br />
       <div className='board'>
-        {board.map(cell => {
+        {board.map((cell, idx) => {
           return (
-            <Cell cell={cell} ></Cell>
+            <Cell key={idx} cell={cell} idx={idx} ></Cell>
           )
         })}
       </div>
@@ -45,21 +47,29 @@ function App() {
   )
 }
 
-function Cell(props: { cell: CellState }) {
-  const { cell } = props
+function Cell(props: { cell: CellState, idx: number }) {
+  const { cell, idx } = props
   const gameState = useContext(GameContext)
   if (!gameState) return null
 
-  const {round, setRound, setWinner} = gameState
-  const [state, setState] = useState(cell)
+  const {round, setRound, setBoard, board, setWinner} = gameState
 
   function handleOnClick(round: number) {
-    if (state) return
-    setState(getTurn(round))
-    setRound(round => round + 1)
+    if (cell) return
+    const move = getTurn(round)
+    const newBoard = board
+    newBoard[idx] = move
+    
+    setBoard(newBoard)
+    const winner = checkForWinner(newBoard)
+    if (winner) {
+      setWinner(winner)
+    } else {
+      setRound(round => round + 1)
+    }
   }
   return (
-    <div className='cell' onClick={() => handleOnClick(round)}>{state}</div>
+    <div className='cell' onClick={() => handleOnClick(round)}>{cell}</div>
   )
 }
 
