@@ -1,9 +1,15 @@
 import { describe, expect, test } from '@jest/globals';
-import { getTurn, checkForWinner, CellState } from '../helper'
+import { getTurn, checkForWinner, CellState, isFull } from '../helper'
 
 describe('helper module', () => {
+  let board = ['x', 'x', 'o', null, null, 'o', 'o', null, null] as CellState[]
   test('getTurn 5 is "o"', () => {
-    expect(getTurn(5)).toBe('o');
+    expect(getTurn(board)).toBe('o');
+  });
+  
+  board = ['x', 'x', 'o', 'o', 'x', 'o', 'o', 'o', 'x'] as CellState[]
+  test.only('empty checker is working', () => {
+    expect(isFull(board)).toBe(true);
   });
 });
 
@@ -73,12 +79,32 @@ describe('win diagonally', () => {
 });
 
 describe('no winners', () => {
-  test('no winners for blank board', () => {
+  test('no winner for blank board', () => {
     const board = [null, null, null, null, null, null, null, null, null] as CellState[]
     expect(checkForWinner(board)).toBe(null);
   });
-  test('no winners for unfinished board', () => {
+  test('no winner for unfinished board', () => {
     const board = [null, null, 'x', 'o', 'x', null, null, null, null] as CellState[]
     expect(checkForWinner(board)).toBe(null);
   });
+  test('no winner for full board', () => {
+    const board = ['x', 'o', 'x', 'o', 'x', 'o', 'o', 'x', 'o'] as CellState[]
+    expect(checkForWinner(board)).toBe('none');
+  });
 });
+
+describe('make winners', () => {
+  test('take winning step', () => {
+    const board = [null, null, null, null, null, null, 'x', null, 'x'] as CellState[]
+    expect(checkForWinner(board)).toBe(null);
+  });
+  test('no winner for unfinished board', () => {
+    const board = [null, null, 'x', 'o', 'x', null, null, null, null] as CellState[]
+    expect(checkForWinner(board)).toBe(null);
+  });
+  test('no winner for full board', () => {
+    const board = ['x', 'o', 'x', 'o', 'x', 'o', 'o', 'x', 'o'] as CellState[]
+    expect(checkForWinner(board)).toBe('none');
+  });
+});
+

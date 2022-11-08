@@ -1,36 +1,41 @@
 import React, { createContext, useContext, useState } from 'react'
 import './App.css'
-import { getTurn, isEven, resetBoard, CellState, checkForWinner } from './helper'
+import { getTurn, isEven, resetBoard, CellState, checkForWinner, makeMove } from './helper'
 
 
 type GameState = {
-  round: number
-  setRound: React.Dispatch<React.SetStateAction<number>>
   setWinner: React.Dispatch<React.SetStateAction<string>>
   board: CellState[]
   setBoard: React.Dispatch<React.SetStateAction<CellState[]>>
+  aiMode: boolean
 }
 
 const GameContext = createContext<GameState | null>(null)
 
 function App() {
   const [board, setBoard] = useState<CellState[]>(resetBoard())
-  const [round, setRound] = useState(0)
   const [winner, setWinner] = useState('')
+  const [aiMode, setAIMode] = useState(false)
 
   function resetGame() {
     setBoard(resetBoard())
-    setRound(0)
     setWinner('')
   }
 
+  function playWithAI() {
+    resetGame()
+    setAIMode(aiMode => !aiMode)
+  }
+
   return (
-    <GameContext.Provider value={{round, setRound, setWinner, board, setBoard}}>
+    <GameContext.Provider value={{ setWinner, board, setBoard, aiMode}}>
     <div className="App">
       {winner ? 
       <h1>Winner: {winner}</h1>
       :
-      <h1>Round: {round}</h1>
+      aiMode 
+      ? <h1>Playing With AI</h1>
+      : <h1>Turn: {getTurn(board)}</h1>
       }
       <br />
       <div className='board'>
@@ -39,6 +44,11 @@ function App() {
             <Cell key={idx} cell={cell} idx={idx} ></Cell>
           )
         })}
+      </div>
+      <br />
+      <div>
+        <label htmlFor="ai-mode">Play with AI </label>
+          <input id='ai-mode' type="checkbox" onClick={playWithAI} defaultChecked={aiMode}/>
       </div>
       <br />
       <button onClick={() => resetGame()}>Reset Game</button>
@@ -52,27 +62,32 @@ function Cell(props: { cell: CellState, idx: number }) {
   const gameState = useContext(GameContext)
   if (!gameState) return null
 
-  const {round, setRound, setBoard, board, setWinner} = gameState
+  const { setBoard, board, setWinner, aiMode} = gameState
 
-  function handleOnClick(round: number) {
+  function handleOnClick() {
     if (cell) return
-    const move = getTurn(round)
-    const newBoard = board
+    // make move
+    const move = getTurn(board)
+    const newBoard = [...board]
     newBoard[idx] = move
 
+    if (aiMode) {
+      let AIMove = makeMove(newBoard)
+      if (AIMove != null) {
+        newBoard[AIMove] = 'o'
+      }
+    }
+
     setBoard(newBoard)
+
+    // check for winner
     const winner = checkForWinner(newBoard)
     if (winner) {
       setWinner(winner)
-    } else {
-      setRound(round => round + 1)
-    }
-    if (round + 1 === 9) {
-      setWinner('None')
-    }
+    } 
   }
   return (
-    <div className='cell' onClick={() => handleOnClick(round)}>{cell}</div>
+    <div className='cell' onClick={handleOnClick}>{cell}</div>
   )
 }
 
