@@ -64,27 +64,37 @@ function Cell(props: { cell: CellState, idx: number }) {
 
   const { setBoard, board, setWinner, aiMode} = gameState
 
-  function handleOnClick() {
-    if (cell) return
-    // make move
+  function humanMove(board: CellState[]) {
     const move = getTurn(board)
-    const newBoard = [...board]
-    newBoard[idx] = move
+    board[idx] = move
+    handleWinner(board)
+  }
 
-    if (aiMode) {
-      let AIMove = makeMove(newBoard)
-      if (AIMove != null) {
-        newBoard[AIMove] = 'o'
-      }
+  function aiMove(board: CellState[]) {
+    let AIMove = makeMove(board)
+    if (AIMove != null) {
+      board[AIMove] = 'o'
     }
+    handleWinner(board)
+  }
 
-    setBoard(newBoard)
 
-    // check for winner
-    const winner = checkForWinner(newBoard)
+  function handleWinner(board: CellState[]) {
+    const winner = checkForWinner(board)
     if (winner) {
       setWinner(winner)
-    } 
+    }
+  }
+
+  function handleOnClick() {
+    if (cell) return
+    const move = getTurn(board)
+    const newBoard = [...board]
+    humanMove(newBoard)
+    if (aiMode) {
+      aiMove(newBoard)
+    }
+    setBoard(newBoard)
   }
   return (
     <div className='cell' onClick={handleOnClick}>{cell}</div>
