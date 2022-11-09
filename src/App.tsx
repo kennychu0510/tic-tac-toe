@@ -88,7 +88,6 @@ function Cell(props: { cell: CellState, idx: number }) {
 
   function handleOnClick() {
     if (cell) return
-    const move = getTurn(board)
     const newBoard = [...board]
     humanMove(newBoard)
     if (aiMode) {
