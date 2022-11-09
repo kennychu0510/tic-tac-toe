@@ -8,6 +8,7 @@ type GameState = {
   board: CellState[]
   setBoard: React.Dispatch<React.SetStateAction<CellState[]>>
   aiMode: boolean
+  winner: string
 }
 
 const GameContext = createContext<GameState | null>(null)
@@ -28,7 +29,7 @@ function App() {
   }
 
   return (
-    <GameContext.Provider value={{ setWinner, board, setBoard, aiMode}}>
+    <GameContext.Provider value={{ setWinner, board, setBoard, aiMode, winner}}>
     <div className="App">
       {winner ? 
       <h1>Winner: {winner}</h1>
@@ -62,7 +63,7 @@ function Cell(props: { cell: CellState, idx: number }) {
   const gameState = useContext(GameContext)
   if (!gameState) return null
 
-  const { setBoard, board, setWinner, aiMode} = gameState
+  const { setBoard, board, setWinner, aiMode, winner} = gameState
 
   function humanMove(board: CellState[]) {
     const move = getTurn(board)
@@ -87,7 +88,7 @@ function Cell(props: { cell: CellState, idx: number }) {
   }
 
   function handleOnClick() {
-    if (cell) return
+    if (cell || winner) return
     const newBoard = [...board]
     humanMove(newBoard)
     if (aiMode) {
