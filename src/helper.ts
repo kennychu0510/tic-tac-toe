@@ -18,6 +18,7 @@ export function checkForWinner(board: CellState[]) {
   // index for consecutive column: 0,3,6    1,4,7   2,5,8
   // index for diagonals: 0,4,6   2,4,8
 
+
   // check rows
   outerLoop:
   for (let i = 0; i < board.length; i += 3) {
@@ -57,9 +58,9 @@ export function isFull(board: CellState[]) {
 export function makeMove(board: CellState[]) {
   if (isFull(board)) return null
   const bestMoveCount:{[key: number]: number} = {}
+  const move = getTurn(board)
   for (let i = 0; i < board.length; i++) {
     const newBoard = [...board]
-    const move = getTurn(newBoard)
     if (!board[i]) {
       newBoard[i] = move
       calculateMoveScore(newBoard, i)
@@ -70,15 +71,16 @@ export function makeMove(board: CellState[]) {
     let move = getTurn(board)
     for (let i = 0; i < board.length; i++) {
       if (!board[i]) {
-        board[i] = move
-        const score = calculateCurrentMoveScore(board)
+        const newBoard = [...board]
+        newBoard[i] = move
+        const score = calculateCurrentMoveScore(newBoard)
         if (score) {
           return bestMoveCount[stepTook] = score
         } else {
-          if (isFull(board)) {
+          if (isFull(newBoard)) {
             bestMoveCount[stepTook] = 0
           } else {
-            takeMove(board, stepTook)
+            takeMove(newBoard, stepTook)
           }
         }
       }
@@ -87,10 +89,10 @@ export function makeMove(board: CellState[]) {
 
   function calculateMoveScore(board: CellState[], stepTook: number) {
     if (checkForWinner(board) === 'o') {
-      bestMoveCount[stepTook] = 1
+      bestMoveCount[stepTook] = 1 * board.filter(cell => cell != null).length
     }
     else if (checkForWinner(board) === 'x') {
-      bestMoveCount[stepTook] = -1
+      bestMoveCount[stepTook] = -1 * board.filter(cell => cell == null).length
     }
     else if (checkForWinner(board) === 'none') {
       bestMoveCount[stepTook] = 0
@@ -100,9 +102,9 @@ export function makeMove(board: CellState[]) {
     }
   }
 
-  function calculateCurrentMoveScore(board: CellState[]): 0 | 1 | -1 | null {
-    if (checkForWinner(board) === 'o') return 1
-    else if (checkForWinner(board) === 'x') return -1
+  function calculateCurrentMoveScore(board: CellState[]): number | null {
+    if (checkForWinner(board) === 'o') return 1 * board.filter(cell => cell != null).length
+    else if (checkForWinner(board) === 'x') return -1 * board.filter(cell => cell == null).length
     else if (checkForWinner(board) === 'none') return 0
     else {
       return null
@@ -110,6 +112,7 @@ export function makeMove(board: CellState[]) {
   }
   // console.log(Object.entries(bestMoveCount).sort((a, b) => b[1] - a[1])[0][0])
   const bestMove = Number(Object.entries(bestMoveCount).sort((a, b) => b[1] - a[1])[0][0])
+  console.log(bestMoveCount)
   return bestMove
 }
 
